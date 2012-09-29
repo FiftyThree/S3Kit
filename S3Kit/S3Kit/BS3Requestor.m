@@ -135,7 +135,6 @@
 
 - (NSString *)authorizationHeader
 {
-	NSLog(@"secretKey = '%@'", secretKey);
     NSData *encryptedStringData = [[self stringToSign] encryptWithKey:secretKey];
     NSString *authToken = [encryptedStringData base64EncodedString];
     return [NSString stringWithFormat:@"AWS %@:%@", accessKey, authToken];
@@ -143,19 +142,19 @@
 
 - (NSMutableURLRequest *)composedRequest
 {
-	//[self show];
-    NSString *urlString = [self composedURLString];
-
-    NSMutableURLRequest *request = [[requestClass alloc] initWithURL:[NSURL URLWithString:urlString]];
+	// setup remaining attributes
 	
     [allHTTPHeaderFields setObject:[self dateHeader] forKey:@"Date"];
 	
     if (HTTPBody)
     {
-        [request setValue:[HTTPBody md5Signature] forHTTPHeaderField:@"Content-Md5"];
+        [allHTTPHeaderFields setObject:[HTTPBody md5Signature] forKey:@"Content-Md5"];
     }
 	
-	// copy values to request
+    NSString *urlString = [self composedURLString];
+    NSMutableURLRequest *request = [[requestClass alloc] initWithURL:[NSURL URLWithString:urlString]];
+	
+	// copy attributes to request
 	
 	request.HTTPMethod = HTTPMethod;
 	
@@ -164,11 +163,13 @@
         [request setValue:[allHTTPHeaderFields objectForKey:key] forHTTPHeaderField:key];
 	}
 	
-    if (self.HTTPBody)
+    if (HTTPBody)
     {
-		request.HTTPBody = self.HTTPBody;
+		request.HTTPBody = HTTPBody;
     }
 
+	// sign the header
+	
     [request setValue:[self authorizationHeader] forHTTPHeaderField:@"Authorization"];
 	return request;
 }
