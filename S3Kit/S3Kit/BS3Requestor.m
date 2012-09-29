@@ -135,6 +135,7 @@
 
 - (NSString *)authorizationHeader
 {
+	NSLog(@"secretKey = '%@'", secretKey);
     NSData *encryptedStringData = [[self stringToSign] encryptWithKey:secretKey];
     NSString *authToken = [encryptedStringData base64EncodedString];
     return [NSString stringWithFormat:@"AWS %@:%@", accessKey, authToken];

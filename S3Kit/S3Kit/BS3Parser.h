@@ -11,5 +11,6 @@
 @interface BS3Parser : NSObject
 
 - (NSDictionary *)dictionaryWithData:(NSData *)data;
++ (NSDictionary *)dictionaryForXMLData:(NSData *)data error:(NSError **)error;
 
 @end
