@@ -20,6 +20,7 @@
 {
 }
 
+@property (nonatomic, retain) NSDate *date;
 @property (nonatomic, retain) NSString *bucketName;
 @property (nonatomic, retain) NSString *resourcePath;
 @property (nonatomic, retain) NSString *accessKey;
@@ -38,6 +39,12 @@
 // HTTP method of, MD5 hash of the HTTP body, etc.
 // so don't change those on the returned object
 
+- (NSString *)stringToSign;
+- (NSString *)authorizationHeader;
+
 - (NSMutableURLRequest *)composedRequest;
+- (NSMutableURLRequest *)signedRequest;
+
+- (void)show;
 
 @end
