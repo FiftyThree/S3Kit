@@ -9,6 +9,7 @@
 @interface NSString (Crypto)
 
 - (NSData *)encryptWithKey:(NSString *)privateKey;
+- (NSData *)dataFromBase16String;
 
 @end
 

@@ -8,7 +8,9 @@
 
 @interface NSData (MD5)
 
-- (NSString *)md5Signature;
+- (NSData *)md5SignatureData;
+- (NSString *)md5SignatureBase64;
+- (NSString *)md5SignatureBase16;
 
 @end
 

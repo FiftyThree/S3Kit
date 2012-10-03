@@ -149,7 +149,7 @@
 - (void)setHTTPBody:(NSData *)body
 {
 	HTTPBody = body;
-	[allHTTPHeaderFields setObject:[HTTPBody md5Signature] forKey:@"Content-Md5"];
+	[allHTTPHeaderFields setObject:[HTTPBody md5SignatureBase64] forKey:@"Content-Md5"];
 }
 
 - (NSMutableURLRequest *)composedRequest
