@@ -25,6 +25,7 @@
 @property (nonatomic, retain) NSString *resourcePath;
 @property (nonatomic, retain) NSString *accessKey;
 @property (nonatomic, retain) NSString *secretKey;
+@property (nonatomic, retain) NSString *redirectUrlString;
 
 @property (nonatomic, retain) NSMutableDictionary *parameters;
 @property (assign) Class requestClass;
@@ -38,8 +39,7 @@
 - (NSString *)stringToSign;
 - (NSString *)authorizationHeader;
 
-- (NSMutableURLRequest *)composedRequest;
-- (NSMutableURLRequest *)signedRequest;
+- (void)prepareAndSign;
 
 - (void)show;
 

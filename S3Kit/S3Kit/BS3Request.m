@@ -10,7 +10,7 @@
 #import <CommonCrypto/CommonHMAC.h>
 #import "NSString+Crypto.h"
 
-@implementation NSString (URL)
+@interface NSString (URL)
 - (NSString *)urlEncoded;
 @end
 
@@ -18,35 +18,31 @@
 
 - (NSString *)urlEncoded
 {
-    return [[self stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]
+    NSString *result =  self;
+	result = [[result stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]
             stringByReplacingOccurrencesOfString:@"+" withString:@"%2B"];
+	result =  [[result stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]
+            stringByReplacingOccurrencesOfString:@"/" withString:@"%2F"];
+			
+	return result;
+
+    //return [self stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding];
 }
 
 @end
 
 @implementation BS3Request
 
-@synthesize bucketName;
-@synthesize resourcePath;
-@synthesize accessKey;
-@synthesize secretKey;
-
-@synthesize HTTPMethod;
-@synthesize allHTTPHeaderFields;
-@synthesize HTTPBody;
-@synthesize parameters;
-
-@synthesize usesSSL;
-@synthesize date;
-
 - (id)init
 {
 	self = [super init];
-	parameters = [NSMutableDictionary dictionary];
-	HTTPMethod = @"GET";
-	date = [NSDate date];
-    [allHTTPHeaderFields setObject:[self dateHeader] forKey:@"Date"];
-	usesSSL = YES;
+	self.parameters = [NSMutableDictionary dictionary];
+	self.HTTPMethod = @"GET";
+	self.date = [NSDate date];
+    [self addValue:[self dateHeader] forHTTPHeaderField:@"Date"];
+	self.usesSSL = YES;
+
+
 	return self;
 }
 
@@ -77,7 +73,7 @@
 
 - (NSString *)stringForParameters
 {
-    if (!parameters || [[parameters allKeys] count] < 1) return @"";
+    if (!self.parameters || [[self.parameters allKeys] count] < 1) return @"";
     static NSSet *validParameters;
     if (!validParameters)
 	{
@@ -89,10 +85,10 @@
 	}
 	
     NSString *paramStr = @"";
-    for (NSString *key in [parameters allKeys])
+    for (NSString *key in [self.parameters allKeys])
     {
         paramStr = [validParameters containsObject:key] ?
-        [paramStr stringByAppendingFormat:@"&%@=%@", key, [[parameters objectForKey:key] urlEncoded]] :
+        [paramStr stringByAppendingFormat:@"&%@=%@", key, [[self.parameters objectForKey:key] urlEncoded]] :
         paramStr;
     }
 	
@@ -105,28 +101,36 @@
 
 - (NSString *)composedURLString
 {
-	NSString *scheme = usesSSL ? @"https" : @"http";
+	NSString *scheme = self.usesSSL ? @"https" : @"http";
+	NSString *urlString;
 
-    //NSString *urlString = [NSString stringWithFormat:@"%@://s3.amazonaws.com/%@%@",
-	//					scheme, bucketName, resourcePath];
+	if(self.redirectUrlString)
+	{
+		urlString = [self.redirectUrlString stringByAppendingPathComponent:self.resourcePath];
+	}
+	else
+	{
+		//urlString = [NSString stringWithFormat:@"%@://s3.amazonaws.com/%@%@",
+		//	scheme, bucketName, resourcePath];
 
-    NSString *urlString = [NSString stringWithFormat:@"%@://%@.s3.amazonaws.com%@",
-						scheme, bucketName, resourcePath];
-				
-    NSString *parameterString = [self stringForParameters];
+		urlString = [NSString stringWithFormat:@"%@://%@.s3.amazonaws.com%@",
+							scheme, self.bucketName, self.resourcePath];
+	}
+					
+	NSString *parameterString = [self stringForParameters];
 	
-    if (parameterString.length > 0)
-    {
-        urlString = [urlString stringByAppendingFormat:@"?%@", parameterString];
-    }
-
+	if (parameterString.length > 0)
+	{
+		urlString = [urlString stringByAppendingFormat:@"?%@", parameterString];
+	}
+	
     return urlString;
 }
 
 
 - (NSString *)dateHeader
 {
-    return [BS3Request dateHeaderForDate:date];
+    return [BS3Request dateHeaderForDate:self.date];
 }
 
 - (NSString *)stringToSign
@@ -154,32 +158,32 @@
 
 - (NSString *)authorizationHeader
 {
-    NSData *encryptedStringData = [[self stringToSign] encryptWithKey:secretKey];
+    NSData *encryptedStringData = [[self stringToSign] encryptWithKey:self.secretKey];
     NSString *authToken = [encryptedStringData base64EncodedString];
-    return [NSString stringWithFormat:@"AWS %@:%@", accessKey, authToken];
+    return [NSString stringWithFormat:@"AWS %@:%@", self.accessKey, authToken];
 }
 
 - (void)setHTTPBody:(NSData *)body
 {
 	[super setHTTPBody:body];
-	[allHTTPHeaderFields setObject:[HTTPBody md5SignatureBase64] forKey:@"Content-Md5"];
+	[self addValue:[self.HTTPBody md5SignatureBase64] forHTTPHeaderField:@"Content-Md5"];
 }
 
 - (void)prepareAndSign
 {	
     NSString *urlString = [self composedURLString];
 	[self setURL:[NSURL URLWithString:urlString]];
-    [request setValue:[self authorizationHeader] forHTTPHeaderField:@"Authorization"];
+    [self setValue:[self authorizationHeader] forHTTPHeaderField:@"Authorization"];
 }
 
 - (void)show
 {
-	printf("bucketName   = %s\n", [bucketName UTF8String]);
-	printf("resourcePath = %s\n", [resourcePath UTF8String]);
+	printf("bucketName   = %s\n", [self.bucketName UTF8String]);
+	printf("resourcePath = %s\n", [self.resourcePath UTF8String]);
 	printf("composedURLString = %s\n", [[self composedURLString] UTF8String]);
 	printf("HTTPMethod   = %s\n", [self.HTTPMethod UTF8String]);	
-	printf("parameters   = %s\n", [[parameters description] UTF8String]);
-	printf("allHTTPHeaderFields = %s\n", [[allHTTPHeaderFields description] UTF8String]);
+	printf("parameters   = %s\n", [[self.parameters description] UTF8String]);
+	printf("allHTTPHeaderFields = %s\n", [[self.allHTTPHeaderFields description] UTF8String]);
 	printf("stringToSign = [[%s]]\n", [[self stringToSign] UTF8String]);
 }
 
