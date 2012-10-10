@@ -39,7 +39,8 @@
 - (NSString *)stringToSign;
 - (NSString *)authorizationHeader;
 
-- (void)prepareAndSign;
+- (void)prepareURL;
+- (void)sign;
 
 - (void)show;
 

@@ -304,16 +304,9 @@ char *NewBase64Encode(
 	return result;
 }
 
-
 - (NSString *)base16EncodedString
 {
     const unsigned char *dataBuffer = (const unsigned char *)[self bytes];
-
-    if (!dataBuffer)
-	{
-        return [NSString string];
-	}
-
     NSUInteger dataLength  = [self length];
     NSMutableString *hexString  = [NSMutableString stringWithCapacity:(dataLength * 2)];
 

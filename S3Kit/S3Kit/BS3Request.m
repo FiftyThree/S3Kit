@@ -18,9 +18,11 @@
 
 - (NSString *)urlEncoded
 {
-    NSString *result =  self;
+    NSString *result =  [self stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding]; // doesn't cover much
+	
 	result = [[result stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]
             stringByReplacingOccurrencesOfString:@"+" withString:@"%2B"];
+			
 	result =  [[result stringByAddingPercentEscapesUsingEncoding:NSUTF8StringEncoding]
             stringByReplacingOccurrencesOfString:@"/" withString:@"%2F"];
 			
@@ -92,7 +94,7 @@
         paramStr;
     }
 	
-    NSLog(@"%@", paramStr);
+    //NSLog(@"%@", paramStr);
 
     return ([paramStr isEqualToString:@""] ?
             @"" :
@@ -106,7 +108,7 @@
 
 	if(self.redirectUrlString)
 	{
-		urlString = [self.redirectUrlString stringByAppendingPathComponent:self.resourcePath];
+		urlString = [self.redirectUrlString stringByAppendingString:self.resourcePath];
 	}
 	else
 	{
@@ -166,13 +168,17 @@
 - (void)setHTTPBody:(NSData *)body
 {
 	[super setHTTPBody:body];
-	[self addValue:[self.HTTPBody md5SignatureBase64] forHTTPHeaderField:@"Content-Md5"];
+	[self addValue:[body md5SignatureBase64] forHTTPHeaderField:@"Content-Md5"];
 }
 
-- (void)prepareAndSign
+- (void)prepareURL
 {	
     NSString *urlString = [self composedURLString];
 	[self setURL:[NSURL URLWithString:urlString]];
+}
+
+- (void)sign
+{
     [self setValue:[self authorizationHeader] forHTTPHeaderField:@"Authorization"];
 }
 
