@@ -9,6 +9,7 @@
 #import "NSData+MD5.h"
 #import <CommonCrypto/CommonHMAC.h>
 #import "NSString+Crypto.h"
+#import "NSString+SK.h"
 
 @interface NSString (URL)
 - (NSString *)urlEncoded;
@@ -77,6 +78,7 @@
 {
     if (!self.parameters || [[self.parameters allKeys] count] < 1) return @"";
     static NSSet *validParameters;
+	
     if (!validParameters)
 	{
 		validParameters = [NSSet setWithObjects:@"delimiter",
@@ -182,15 +184,125 @@
     [self setValue:[self authorizationHeader] forHTTPHeaderField:@"Authorization"];
 }
 
+- (BOOL)isRedirected
+{
+	return [[self composedURLString] rangeOfString:@"amazon"].location != NSNotFound;
+}
+
 - (void)show
 {
-	printf("bucketName   = %s\n", [self.bucketName UTF8String]);
-	printf("resourcePath = %s\n", [self.resourcePath UTF8String]);
-	printf("composedURLString = %s\n", [[self composedURLString] UTF8String]);
-	printf("HTTPMethod   = %s\n", [self.HTTPMethod UTF8String]);	
-	printf("parameters   = %s\n", [[self.parameters description] UTF8String]);
-	printf("allHTTPHeaderFields = %s\n", [[self.allHTTPHeaderFields description] UTF8String]);
-	printf("stringToSign = [[%s]]\n", [[self stringToSign] UTF8String]);
+	if (self.bucketName)
+	{
+		printf("bucketName   = %s\n", [self.bucketName UTF8String]);
+	}
+	
+	printf("  resourcePath = %s\n", [self.resourcePath UTF8String]);
+	printf("  composedURLString = %s\n", [[self composedURLString] UTF8String]);
+	printf("  HTTPMethod   = %s\n", [self.HTTPMethod UTF8String]);
+	printf("  parameters   = %s\n", [[self.parameters description] UTF8String]);
+	printf("  allHTTPHeaderFields = %s\n", [[self.allHTTPHeaderFields description] UTF8String]);
+	printf("  HTTPBody = %i bytes\n", [self.HTTPBody length]);
+	/*
+	if ([self isRedirected])
+	{
+		printf("stringToSign = [[%s]]\n", [[self stringToSign] UTF8String]);
+	}
+	*/
 }
+
+/*
+- (void)syncSend
+{
+	printf("\n--- syncSend --- \n");
+	[self show];
+	NSURLConnection *conn = [[NSURLConnection alloc] initWithRequest:self delegate:self];
+	self.isDone = NO;
+	[conn start];
+	[self waitUntilDone];
+}
+
+- (void)waitUntilDone
+{		
+	while (![self isDone])
+	{
+		NSDate *loopUntil = [NSDate dateWithTimeIntervalSinceNow:.1];
+		[[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:loopUntil];
+	}
+}
+
+- (void)connection:(NSURLConnection *)connection didReceiveResponse:(NSURLResponse *)response
+{
+	self.response = (NSHTTPURLResponse *)response;
+	if(self.outputStream)
+	{
+		[self.outputStream open];
+	}
+}
+
+- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data
+{
+	if (self.outputStream)
+	{
+		[self.outputStream write:[data bytes] maxLength:[data length]];
+	}
+	else
+	{
+		if (self.responseData == nil)
+		{
+			self.responseData = [[NSMutableData alloc] init];
+		}
+		
+		[self.responseData appendData:data];
+	}
+}
+
+- (void)connection:(NSURLConnection *)connection didFailWithError:(NSError *)error
+{
+	if (self.outputStream)
+	{
+		[self.outputStream close];
+	}
+	
+	self.error = error;
+	self.isDone = YES;
+}
+
+- (void)connectionDidFinishLoading:(NSURLConnection *)connection
+{
+	if (self.outputStream)
+	{
+		[self.outputStream close];
+	}
+	
+	self.isDone = YES;
+}
+
+- (NSURLRequest *)connection:(NSURLConnection *)connection
+	willSendRequest:(NSURLRequest *)request
+	redirectResponse:(NSURLResponse *)redirectResponse
+{
+
+	if(![request.HTTPMethod isEqualToString:self.HTTPMethod])
+	{
+		NSMutableURLRequest *newRequest = [NSMutableURLRequest requestWithURL:[request URL]];
+		newRequest.HTTPMethod = self.HTTPMethod;
+		newRequest.HTTPBody = self.HTTPBody;
+		[newRequest setAllHTTPHeaderFields:request.allHTTPHeaderFields];
+		request = newRequest;
+	}
+	
+	printf("\n---- redirect ----\n");
+	printf("self.responseData = '%s'\n", [[NSString stringWithData:self.responseData] UTF8String]);
+	printf("  headers: %s\n", [[[(NSHTTPURLResponse *)redirectResponse allHeaderFields] description] UTF8String]);
+	printf("  status: %i\n", [(NSHTTPURLResponse *)redirectResponse statusCode]);
+	printf("  request: %s\n", [[request description] UTF8String]);
+	printf("  request method: %s\n", [request.HTTPMethod UTF8String]);
+	//printf("  redirectResponse: %s\n", [[redirectResponse  description] UTF8String]);
+	printf("------------------\n");
+	
+	
+	return request;
+}
+*/
 
 @end

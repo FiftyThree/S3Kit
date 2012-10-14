@@ -27,8 +27,8 @@
 @property (nonatomic, retain) NSString *secretKey;
 @property (nonatomic, retain) NSString *redirectUrlString;
 
+
 @property (nonatomic, retain) NSMutableDictionary *parameters;
-@property (assign) Class requestClass;
 @property (assign) BOOL usesSSL;
 
 
@@ -44,4 +44,14 @@
 
 - (void)show;
 
+// sending
+/*
+@property (nonatomic, retain) NSHTTPURLResponse *response;
+@property (nonatomic, retain) NSError *error;
+@property (nonatomic, retain) NSMutableData *responseData;
+@property (nonatomic, assign) BOOL isDone;
+@property (nonatomic, assign) NSOutputStream *outputStream;
+
+- (void)syncSend;
+*/
 @end
