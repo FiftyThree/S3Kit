@@ -9,7 +9,7 @@
 #import "NSData+MD5.h"
 #import <CommonCrypto/CommonHMAC.h>
 #import "NSString+Crypto.h"
-#import "NSString+SK.h"
+
 
 @interface NSString (URL)
 - (NSString *)urlEncoded;
