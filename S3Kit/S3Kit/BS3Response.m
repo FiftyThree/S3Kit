@@ -72,7 +72,7 @@ static NSDateFormatter *_s3DateFormat;
     if ([BS3Response respondsToSelector:s]) {
         formattedDict = [BS3Response performSelector:s withObject:parsedDict];
     } else {
-        formattedDict = [NSDictionary dictionaryWithObject:@"Couldn't parse result" forKey:@"Error"];
+        formattedDict = [@{@"Error":@"Couldn't parse result"} mutableCopy];
     }
     return formattedDict;
 }

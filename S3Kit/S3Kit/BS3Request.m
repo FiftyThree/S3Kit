@@ -201,7 +201,7 @@
 	printf("  HTTPMethod   = %s\n", [self.HTTPMethod UTF8String]);
 	printf("  parameters   = %s\n", [[self.parameters description] UTF8String]);
 	printf("  allHTTPHeaderFields = %s\n", [[self.allHTTPHeaderFields description] UTF8String]);
-	printf("  HTTPBody = %i bytes\n", [self.HTTPBody length]);
+	printf("  HTTPBody = %ld bytes\n", (unsigned long) [self.HTTPBody length]);
 	/*
 	if ([self isRedirected])
 	{

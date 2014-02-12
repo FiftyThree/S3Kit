@@ -14,7 +14,7 @@
 {
     static const int kNumBytes = 16;
     unsigned char result[kNumBytes];
-    CC_MD5([self bytes], [self length], result);
+    CC_MD5([self bytes], (CC_LONG)[self length], result);
     return [NSData dataWithBytes:result length:sizeof(unsigned char) * kNumBytes];
 }
 
